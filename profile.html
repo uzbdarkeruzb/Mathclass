@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mening Profilim</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(270deg, #00ccff, #00ff99, #ff00cc, #0066ff);
+      background-size: 800% 800%;
+      animation: gradient 12s ease infinite;
+      color: #fff;
+      margin: 0;
+      text-align: center;
+      padding: 20px;
+    }
+
+    @keyframes gradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    h1 {
+      font-size: 2em;
+      margin-top: 10px;
+      text-shadow: 0 0 15px rgba(255,255,255,0.6);
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      max-width: 400px;
+      margin: 40px auto;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 0 20px rgba(255,255,255,0.3);
+    }
+
+    .emoji {
+      font-size: 3rem;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+
+    .emoji:hover {
+      transform: scale(1.2);
+    }
+
+    input, select {
+      width: 80%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 1em;
+      outline: none;
+    }
+
+    button {
+      background: #00ffcc;
+      color: #000;
+      font-weight: bold;
+      border: none;
+      padding: 10px 25px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 1em;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: #fff;
+      color: #000;
+      transform: scale(1.05);
+    }
+
+    .logout {
+      display: inline-block;
+      margin-top: 20px;
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+      border-bottom: 2px solid transparent;
+    }
+
+    .logout:hover {
+      border-color: white;
+    }
+
+  </style>
+</head>
+<body>
+  <h1>👤 Mening profilim</h1>
+
+  <div class="card">
+    <div id="emoji" class="emoji">🙂</div>
+
+    <h2 id="name">Ism...</h2>
+    <p><b>Sinf:</b> <span id="sinf">A</span></p>
+    <p><b>Ball:</b> <span id="score">0</span></p>
+
+    <hr style="opacity:0.3;">
+
+    <h3>Tahrirlash</h3>
+    <input type="text" id="newName" placeholder="Yangi ism...">
+    <select id="newEmoji">
+      <option>🙂</option>
+      <option>😎</option>
+      <option>🤓</option>
+      <option>😄</option>
+      <option>🤩</option>
+      <option>🦊</option>
+      <option>🐱</option>
+      <option>🐻</option>
+      <option>🐼</option>
+      <option>🐯</option>
+    </select>
+    <button onclick="saveChanges()">💾 Saqlash</button>
+  </div>
+
+  <a href="index.html" class="logout">⬅️ Chiqish</a>
+
+  <script>
+    const SERVER_URL = "https://sizning-server-linkingiz.onrender.com"; // <-- o'zingizning backend linkini yozing
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
+    if (!currentUser) {
+      alert("Avval tizimga kiring!");
+      window.location.href = "login.html";
+    }
+
+    // Profilni yuklash
+    async function loadProfile() {
+      const res = await fetch(`${SERVER_URL}/leaderboard`);
+      const users = await res.json();
+      const user = users.find(u => u.name === currentUser.name);
+
+      if (user) {
+        document.getElementById("emoji").textContent = user.emoji || "🙂";
+        document.getElementById("name").textContent = user.name;
+        document.getElementById("sinf").textContent = user.sinf;
+        document.getElementById("score").textContent = user.score;
+      }
+    }
+
+    loadProfile();
+
+    // Tahrirni saqlash
+    async function saveChanges() {
+      const newName = document.getElementById("newName").value.trim();
+      const newEmoji = document.getElementById("newEmoji").value;
+
+      if (!newName) {
+        alert("Yangi ism kiriting!");
+        return;
+      }
+
+      const res = await fetch(`${SERVER_URL}/leaderboard`);
+      const users = await res.json();
+      const user = users.find(u => u.name === currentUser.name);
+
+      if (user) {
+        user.name = newName;
+        user.emoji = newEmoji;
+      }
+
+      await fetch(`${SERVER_URL}/register`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(users)
+      });
+
+      localStorage.setItem("currentUser", JSON.stringify(user));
+      alert("O'zgarishlar saqlandi ✅");
+      loadProfile();
+    }
+  </script>
+</body>
+</html>

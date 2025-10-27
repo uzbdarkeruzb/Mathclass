@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>1-sinf matematika testi</title>
+  <style>
+    body{font-family:Poppins, sans-serif;background:linear-gradient(135deg,#89f7fe,#66a6ff);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0;color:#111}
+    .box{background:#fff;border-radius:14px;padding:24px;box-shadow:0 6px 24px rgba(0,0,0,0.12);width:92%;max-width:520px;text-align:center}
+    h1{margin:0 0 12px}
+    .question{font-size:22px;margin:16px 0}
+    .opts{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+    .opt{padding:12px;border-radius:10px;border:none;cursor:pointer;font-size:18px;background:#f0f4ff}
+    .opt.correct{background:#4CAF50;color:#fff}
+    .opt.wrong{background:#E53935;color:#fff}
+    #nextBtn{margin-top:14px;padding:10px 18px;border-radius:10px;border:none;background:#0072ff;color:#fff;cursor:pointer;display:none}
+    #nameBox{margin-top:12px}
+    #scoreView{margin-top:12px;font-weight:bold}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>🧮 Qo‘shish va ayirish testi</h1>
+
+    <div id="intro">
+      <p>100 ta savoldan 10 tasi tasodifiy chiqadi. Har to‘g‘ri javob — 5 ball.</p>
+      <div id="nameBox">
+        <input id="playerName" placeholder="Ismingizni kiriting" style="padding:10px;border-radius:8px;border:1px solid #ccc;width:70%" />
+      </div>
+      <button id="startBtn" style="margin-top:12px;padding:10px 18px;border-radius:10px;border:none;background:#00c6ff;color:#fff;cursor:pointer">Testni boshlash</button>
+    </div>
+
+    <div id="quiz" style="display:none">
+      <div class="question" id="questionText"></div>
+      <div class="opts" id="options"></div>
+      <button id="nextBtn">Keyingi</button>
+      <div id="scoreView"></div>
+    </div>
+  </div>
+
+  <script>
+    // SERVER manzili (agar lokal: http://localhost:3000)
+    const SERVER = "http://localhost:3000"; // agar boshqa joyga joylashtirsangiz shu qiymatni o'zgartiring
+
+    // 100 ta savol: 50 qo'shish + 50 ayirish (manfiy chiqmasin)
+    const allQuestions = [];
+    for (let i = 0; i < 50; i++) {
+      const a = Math.floor(Math.random() * 9) + 1;
+      const b = Math.floor(Math.random() * 9) + 1;
+      allQuestions.push({ q: `${a} + ${b} = ?`, correct: a + b });
+    }
+    for (let i = 0; i < 50; i++) {
+      const a = Math.floor(Math.random() * 9) + 1;
+      const b = Math.floor(Math.random() * a); // manfiy chiqmasin
+      allQuestions.push({ q: `${a} - ${b} = ?`, correct: a - b });
+    }
+
+    // Start
+    const startBtn = document.getElementById("startBtn");
+    const playerNameInput = document.getElementById("playerName");
+    const intro = document.getElementById("intro");
+    const quiz = document.getElementById("quiz");
+    const qText = document.getElementById("questionText");
+    const optionsDiv = document.getElementById("options");
+    const nextBtn = document.getElementById("nextBtn");
+    const scoreView = document.getElementById("scoreView");
+
+    let quizQuestions = [];
+    let idx = 0;
+    let score = 0;
+
+    startBtn.addEventListener("click", () => {
+      const name = (playerNameInput.value || "").trim();
+      if (!name) { alert("Iltimos, ismingizni kiriting"); return; }
+
+      // 10 ta random savol tanlash (100 ta ichidan)
+      quizQuestions = allQuestions.sort(() => Math.random() - 0.5).slice(0, 10);
+      intro.style.display = "none";
+      quiz.style.display = "block";
+      idx = 0; score = 0;
+      showQuestion();
+    });
+
+    function showQuestion() {
+      nextBtn.style.display = "none";
+      optionsDiv.innerHTML = "";
+      const cur = quizQuestions[idx];
+      qText.textContent = `Savol ${idx + 1}: ${cur.q}`;
+
+      // create 4 options (to'g'ri + 3 fake)
+      const opts = [cur.correct];
+      while (opts.length < 4) {
+        const fake = cur.correct + (Math.floor(Math.random()*5) - 2);
+        if (fake >= 0 && !opts.includes(fake)) opts.push(fake);
+      }
+      opts.sort(() => Math.random() - 0.5);
+
+      opts.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.className = "opt";
+        btn.textContent = opt;
+        btn.onclick = () => selectOption(btn, opt === cur.correct);
+        optionsDiv.appendChild(btn);
+      });
+
+      scoreView.textContent = `Hozirgi ball: ${score}`;
+    }
+
+    function selectOption(btn, correct) {
+      // disable all
+      const btns = optionsDiv.querySelectorAll("button");
+      btns.forEach(b => b.disabled = true);
+
+      if (correct) {
+        btn.classList.add("correct");
+        score += 5;
+      } else {
+        btn.classList.add("wrong");
+      }
+      nextBtn.style.display = "inline-block";
+      scoreView.textContent = `Hozirgi ball: ${score}`;
+    }
+
+    nextBtn.addEventListener("click", () => {
+      idx++;
+      if (idx < quizQuestions.length) {
+        showQuestion();
+      } else {
+        finishTest();
+      }
+    });
+
+    async function finishTest() {
+      quiz.style.display = "none";
+      scoreView.style.display = "block";
+      scoreView.textContent = `🏁 Test tugadi! Umumiy ball: ${score}`;
+
+      // ismni olamiz va serverga yuboramiz
+      const name = (playerNameInput.value || "").trim() || "Noma'lum";
+
+      try {
+        const res = await fetch(`${SERVER}/submit`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, score })
+        });
+        if (!res.ok) throw new Error("Server javobi muammo");
+        alert("Natija serverga saqlandi! Endi leaderboardga o‘tasiz.");
+        window.location.href = "leaderboard.html";
+      } catch (e) {
+        // agar serverga ulanmasa — fallback: localStorage ga saqlaymiz
+        console.warn("Serverga yuborib bo'lmadi, localStorage ga saqlanmoqda:", e);
+        const results = JSON.parse(localStorage.getItem("results")) || [];
+        results.push({ name, score, time: new Date().toISOString() });
+        localStorage.setItem("results", JSON.stringify(results));
+        alert("Serverga yuborib bo'lmadi — natija localStorage ga saqlandi. Leaderboard sahifasida ham ko‘rishingiz mumkin.");
+        window.location.href = "leaderboard.html";
+      }
+    }
+  </script>
+</body>
+</html>

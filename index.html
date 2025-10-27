@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <title>Asosiy sahifa</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #74ebd5, #ACB6E5);
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      animation: bgMove 10s infinite alternate;
+    }
+    @keyframes bgMove {
+      from { background-position: left; }
+      to { background-position: right; }
+    }
+    header {
+      position: absolute;
+      top: 20px;
+      width: 90%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #333;
+    }
+    header a {
+      color: #ff3366;
+      text-decoration: none;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    header a:hover { color: #ff0033; }
+    .menu { text-align: center; }
+    .test-btn {
+      background: linear-gradient(90deg, #00c6ff, #0072ff);
+      color: white;
+      border: none;
+      padding: 25px 60px;
+      border-radius: 20px;
+      font-size: 26px;
+      cursor: pointer;
+      margin-bottom: 40px;
+      box-shadow: 0 0 15px rgba(0, 114, 255, 0.7);
+      transition: 0.3s;
+    }
+    .test-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 25px rgba(0, 114, 255, 1);
+    }
+    .bottom-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+    }
+    .small-btn {
+      background: linear-gradient(90deg, #ff9966, #ff5e62);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 15px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(255, 94, 98, 0.7);
+      transition: 0.3s;
+    }
+    .small-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(255, 94, 98, 1);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h2 id="welcome">Salom!</h2>
+    <a href="#" onclick="logout()">🚪 Chiqish</a>
+  </header>
+
+  <div class="menu">
+    <button class="test-btn" onclick="window.location.href='test.html'">🧮 Test ishlash</button>
+
+    <div class="bottom-buttons">
+      <button class="small-btn" onclick="window.location.href='leaderboard.html'">🏆 Leaderboard</button>
+      <button class="small-btn" onclick="window.location.href='profile.html'">👤 Profil</button>
+    </div>
+  </div>
+
+  <script>
+    const user = JSON.parse(localStorage.getItem("loggedInUser"));
+    if (!user) {
+      alert("Avval login qiling!");
+      location.href = "login.html";
+    } else {
+      document.getElementById("welcome").innerText = `Salom, ${user.username} (${user.sinf}-sinf)!`;
+    }
+
+    function logout() {
+      localStorage.removeItem("loggedInUser");
+      location.href = "login.html";
+    }
+  </script>
+</body>
+</html>

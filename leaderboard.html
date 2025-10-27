@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <title>Leaderboard</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #ffecd2, #fcb69f);
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 40px;
+    }
+    h1 {
+      color: #333;
+      font-size: 36px;
+      margin-bottom: 20px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 90%;
+      max-width: 500px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      overflow: hidden;
+    }
+    th, td {
+      padding: 15px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+      font-size: 20px;
+    }
+    th {
+      background: linear-gradient(90deg, #ff9966, #ff5e62);
+      color: white;
+    }
+    tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+    tr:hover {
+      background: #f1f1f1;
+    }
+    a {
+      margin-top: 30px;
+      text-decoration: none;
+      color: white;
+      background: linear-gradient(90deg, #00c6ff, #0072ff);
+      padding: 12px 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      transition: 0.3s;
+    }
+    a:hover {
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <h1>🏆 Natijalar jadvali</h1>
+  <table id="leaderTable">
+    <tr>
+      <th>O‘rin</th>
+      <th>Ism</th>
+      <th>Ball</th>
+    </tr>
+  </table>
+
+  <a href="index.html">🏠 Asosiy sahifaga qaytish</a>
+
+  <script>
+    // localStorage dan natijalarni olish
+    const results = JSON.parse(localStorage.getItem("results")) || [];
+
+    // Ball bo‘yicha tartiblash (ko‘pdan kamga)
+    results.sort((a, b) => b.score - a.score);
+
+    const table = document.getElementById("leaderTable");
+
+    if (results.length === 0) {
+      const row = document.createElement("tr");
+      const cell = document.createElement("td");
+      cell.colSpan = 3;
+      cell.textContent = "Hozircha natijalar yo‘q.";
+      cell.style.padding = "20px";
+      row.appendChild(cell);
+      table.appendChild(row);
+    } else {
+      results.forEach((r, i) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${i + 1}</td>
+          <td>${r.name}</td>
+          <td>${r.score}</td>
+        `;
+        table.appendChild(row);
+      });
+    }
+  </script>
+</body>
+</html>
